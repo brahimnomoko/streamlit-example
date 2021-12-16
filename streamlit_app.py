@@ -1,38 +1,53 @@
-from collections import namedtuple
-import altair as alt
-import math
 import pandas as pd
+import numpy as np
+import pickle
 import streamlit as st
-
-"""
-# Welcome to Streamlit!
-
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
-
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
-
-
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
-
-    Point = namedtuple('Point', 'x y')
-    data = []
-
-    points_per_turn = total_points / num_turns
-
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
-
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+pickle_in = open('knn.pkl', 'rb')
+classifier = pickle.load(pickle_in)
+def welcome():
+    return 'welcome all'
+  
+# defining the function which will make the prediction using 
+# the data which the user inputs
+def prediction(sepal_length, sepal_width, petal_length, petal_width):  
+   
+    prediction = classifier.predict(
+        [[sepal_length, sepal_width, petal_length, petal_width]])
+    print(prediction)
+    return prediction
+    # this is the main function in which we define our webpage 
+def main():
+      # giving the webpage a title
+    st.title("Iris Flower Prediction")
+      
+    # here we define some of the front end elements of the web page like 
+    # the font and background color, the padding and the text to be displayed
+    html_temp = """
+    <div style ="background-color:yellow;padding:13px">
+    <h1 style ="color:black;text-align:center;">Streamlit Iris Flower Classifier ML App </h1>
+    </div>
+    """
+      
+    # this line allows us to display the front end aspects we have 
+    # defined in the above code
+    st.markdown(html_temp, unsafe_allow_html = True)
+      
+   # the following lines create text boxes in which the user can enter 
+    # the data required to make the prediction
+    sepal_length = st.text_input("Sepal Length", "Type Here")
+    sepal_width = st.text_input("Sepal Width", "Type Here")
+    petal_length = st.text_input("Petal Length", "Type Here")
+    petal_width = st.text_input("Petal Width", "Type Here")
+    result =""
+      
+    # the below line ensures that when the button called 'Predict' is clicked, 
+    # the prediction function defined above is called to make the prediction 
+    # and store it in the variable result
+    if st.button("Predict"):
+        result = prediction(sepal_length, sepal_width, petal_length, petal_width)
+    st.success('The output is {}'.format(result))
+     
+if __name__=='__main__':
+    main()
+    streamlit run app.py
+    
